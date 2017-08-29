@@ -1,0 +1,52 @@
+---
+title: "Capstone Data Wrangling Report"
+author: "Gwen Rino"
+date: "8/27/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The biggest challenge in wrangling and tidying the data was to decide how to deal with the two initial datasets, one of math scores and one of Portuguese scores, since the supplementary information about the data indicated that some students appeared in both datasets.
+
+One possibility was to follow the suggestion of the supplementary information to find the intersection of the two datasets by finding students whose listed attributes are identical:
+
+```{r, eval=FALSE}
+d1=read.table("student-mat.csv",sep=";",header=TRUE)
+d2=read.table("student-por.csv",sep=";",header=TRUE)
+
+d3=merge(d1,d2,by=c("school","sex","age","address","famsize","Pstatus","Medu","Fedu","Mjob","Fjob","reason","nursery","internet"))
+print(nrow(d3)) # 382 students
+```
+
+I found a kernel in a Kaggle submission using this dataset that took a similar approach, though the coder used more attributes and therefore found fewer students in the intersecting group (https://www.kaggle.com/calcifer/alcohol-consumption-and-average-grades). This coder also decided (after finding a high correlation between math and Portuguese grades) to average the math and Portuguese grades and collapse the course distinction in the merged dataset.
+
+I didn't like the idea of averaging the math and Portuguese grades. I certainly know many people who received high grades in one subject and low grades in another! In the end, I decided that since my goal is to accurately predict final grades, I would consider which course (math or Portuguese) to be a distinct and important attribute in and of itself. I found the intersection between the math and Portuguese datasets in case I need it later, but I will mostly work with a combined dataset, d_both, that includes all the observations and also a new attribute for course.
+
+Here is my code:
+
+```{r, eval=FALSE}
+d_math <- read.csv2("student-mat.csv")
+d_port <- read.csv2("student-por.csv")
+
+# How many students are enrolled in both math and Portuguese? Merge based on attributes not associated with course.
+d_both <- merge(d_math, d_port, by=c("school", "sex", "age", "address", 
+                "famsize", "Pstatus", "Medu", "Fedu", "Mjob", "Fjob",
+                "reason", "guardian", "traveltime", "activities", "nursery",
+                "higher", "internet", "romantic", "famrel", "freetime", 
+                "goout", "Dalc", "Walc", "health", "absences"))
+print(nrow(d_both)) # There are 100 students enrolled in both courses
+
+# Create complete dataset d_total: combine math and Portuguese datasets with "course" as variable
+
+course <- rep("math", times = length(d_math$school))
+d_math <- cbind(d_math, course)
+
+course <- rep("port", times = length(d_port$school))
+d_port <- cbind(d_port, course)
+
+d_total <- rbind(d_math, d_port)
+View(d_total)
+```
