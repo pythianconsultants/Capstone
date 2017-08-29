@@ -34,6 +34,9 @@ After cleaning and tidying the data, I will do a series of exploratory visualiza
 
 The final project will include R code for the analysis and also a slide deck that presents the results.
 
+Testing the changes
+
+
 
 
 
